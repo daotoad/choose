@@ -1,0 +1,251 @@
+#!/bin/bash
+
+source $HOME/.smartcd_config
+source $HOME/.choose/lib/core/completion
+#CHOOSE_TOOLS="$HOME/opt"
+
+function choose() {
+
+    local command="$1"
+    case $command in
+        -h|help|'') shift; _choose_usage   "$@";;
+              tool) shift; _choose_tool    "$@";;
+              list) shift; _choose_list    "$@";;
+            config) shift; _choose_config  "$@";;
+           install) shift; _choose_install "$@";;
+               add) shift; _choose_add     "$@";;
+                 *) shift; _choose_usage   "$@";;
+    esac;
+
+}
+
+function _choose_tools_base {
+    if [[ -n $CHOOSE_TOOLS ]]; then
+        echo "$CHOOSE_TOOLS"
+    else
+        echo "$(_choose_base)/tools"
+    fi
+}
+
+function _choose_source_base {
+    if [[ -n $CHOOSE_SRC ]]; then
+        echo "$CHOOSE_SRC"
+    else
+        echo "$(_choose_base)/src"
+    fi
+}
+
+function _choose_base() {
+    if [[ -n $CHOOSE_BASE ]]; then
+        echo "$CHOOSE_BASE"
+    else
+        echo "$HOME/choose"
+    fi
+}
+
+function _choose_usage () {
+    local usage="Usage: choose ( help | tool | list ) [args]"
+    echo $usage;
+}
+
+function _choose_list () {
+    local list_type="$1";
+    case $list_type in
+                 tools) shift; _choose_list_tools "$@";;
+              versions) shift; _choose_list_versions "$@";;
+                     *) shift; _choose_list_usage "$@";;
+    esac;
+}
+
+function _choose_list_tools () {
+    _list_directories $(_choose_tools_base)
+}
+
+function _choose_list_versions () {
+    local tool="$1"
+    local base=$(_choose_tools_base)
+
+    case $tool in
+        '') echo "You must choose a tool to list the versions of.";;
+         *) if  _isa_tool "$tool";
+            then _list_directories "$base/$tool";
+            else echo "Tool '$tool' is not managed by choose."
+            fi;;
+    esac
+}
+
+function _choose_list_usage () {
+    echo "Enter either 'tools' or 'versions' to list them"
+    return 1;
+}
+
+
+
+function _list_directories () {
+    local path="$1"
+    if [[ ! -d "$path" ]]; then return; fi 
+
+    local directories=$(find $path -mindepth 1 -maxdepth 1 -type d -exec  basename {} \;)
+    echo -E "$directories";
+}
+
+function _isa_tool () {
+    local name="$1"
+
+    local base=$(_choose_tools_base)
+    local tools=$(_list_directories "$base" "\t")
+
+    [[ $tools =~ $name ]] && return 0  || return 1
+}
+
+function _isa_version () {
+    local tool="$1"
+    local version="$2"
+
+    local base=$(_choose_tools_base)
+    local versions=$(_list_directories "$base/$tool" | tr "\n", ",")
+
+    [[ $versions =~ $version ]] && return 0  || return 1
+}
+
+# select a tool/version
+# choose tool <tool> <version>
+function _choose_tool () {
+    local tool="$1";
+    local version="$2";
+
+    if [ -z "$tool" ]; then echo "Specify a tool"; return 0; fi
+    if ! _isa_tool "$tool"; then echo "Tool '$tool' is not managed by choose."; return 0; fi
+
+    if [ -z "$version" ]; then echo "Specify a version"; return 0; fi
+    if ! _isa_version "$tool" "$version"; then echo "Version '$version of '$tool' is not managed by choose."; return 0; fi
+
+    _choose_write_chooser_file $tool $version
+    _choose_install_smartcd_template $tool $version
+}
+
+function _choose_write_chooser_file () {
+    local tool="$1";
+    local version="$2";
+
+    echo $version > ".choose.$tool"
+}
+
+function _choose_install_smartcd_template () {
+    local tool="$1";
+    local version="$2";
+
+    if ! _is_chooser_backend_installed; then
+        _choose_install_chooser_backend
+    fi
+
+    if ! _is_chooser_installed; then
+        smartcd template install "chooser"
+    fi
+}
+
+function _choose_install_chooser_backend () {
+    local ROOT=$(_choose_base)
+    mkdir -p "$HOME/.smartcd/templates"
+    cat <<EOF > "$HOME/.smartcd/templates/chooser-backend"
+########################################################################
+# This is a smartcd template.  Edit this file to create a named
+# configuration you can copy to any number of directories.  This is
+# useful if you often use the same settings in different directories
+# but with minor differences.
+#
+# The string __PATH__ will be replaced with the directory being
+# configured when this template is installed, so you can set variables:
+#
+#    autostash PATH=__PATH__/bin:\$PATH
+#
+# This template is named 'chooser-backend'
+########################################################################
+
+# Enter any bash_enter commands below here: (leave this line!)
+CHOOSER_ROOT=$ROOT
+
+chosen=(.choose.*);
+path=""
+manpath=""
+
+for choice in \${chosen[*]}
+  do
+    version=\$(cat $choice)
+    command=\${choice:8}
+
+    path+="\$CHOOSER_ROOT/\$command/\$version/bin:"
+    manpath+="\$CHOOSER_ROOT/$command/\$version/man:"
+
+  done
+
+autostash PATH=\$path\$PATH
+autostash MANPATH=\$manpath\$MANPATH
+
+# Enter any bash_leave commands below here: (leave this line!)
+
+EOF
+
+    cat <<EOF > "$HOME/.smartcd/templates/chooser"
+########################################################################
+# This is a smartcd template.  Edit this file to create a named
+# configuration you can copy to any number of directories.  This is
+# useful if you often use the same settings in different directories
+# but with minor differences.
+#
+# The string __PATH__ will be replaced with the directory being
+# configured when this template is installed, so you can set variables:
+#
+#    autostash PATH=__PATH__/bin:\$PATH
+#
+# This template is named 'chooser'
+########################################################################
+
+# Enter any bash_enter commands below here: (leave this line!)
+smartcd template run chooser-backend
+
+# Enter any bash_leave commands below here: (leave this line!)
+
+EOF
+}
+
+function _is_chooser_backend_installed() {
+    local templates=$(smartcd template list | tr '\n' ',' )
+    if [[ $templates =~ ",chooser-backend," ]];
+    then return 0
+    else return 1
+    fi
+}
+
+function _is_chooser_installed() {
+    local enter=$(smartcd show enter)
+    if [[ $enter =~ "smartcd template run chooser-backend" ]];
+    then return 0
+    else return 1
+    fi
+}
+
+function _choose_add () {
+    echo "TODO";
+}
+
+# edit config file
+function _choose_config () {
+    echo "TODO";
+}
+
+
+function _choose_install () {
+    echo "TODO";
+}
+
+# echo full path to tool/version
+# choose path tool NAME - 
+# choose path tool NAME VERSION
+# choose path source NAME VERSION
+function _choose_path () {
+    echo "TODO";
+}
+
+
+source 
