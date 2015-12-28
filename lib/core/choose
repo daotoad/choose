@@ -84,7 +84,7 @@ function _list_directories () {
     local path="$1"
     if [[ ! -d "$path" ]]; then return; fi 
 
-    local directories=$(find $path -mindepth 1 -maxdepth 1 -type d -exec  basename {} \;)
+    local directories=$(find -L $path -mindepth 1 -maxdepth 1 -type d -exec  basename {} \;)
     echo -E "$directories";
 }
 

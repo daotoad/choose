@@ -27,11 +27,12 @@ function _choose_completion() {
         case $prev in
                          help) words="tool list";;
                          list) words="tools versions";;
-                         tool) words="$(choose list tools)"
+                         tool) words="$(choose list tools)";;
         esac
     elif [[ $COMP_CWORD == 3 ]]; then
         case $prev in
                      versions) words="$(choose list tools)";;
+                            *) _isa_tool "$prev" && words="$(choose list versions $prev)";;
         esac
     fi
 
