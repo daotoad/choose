@@ -1,0 +1,7 @@
+if [[ -f $HOME/.choose/lib/core/choose ]]; then
+    source $HOME/.choose/lib/core/choose
+    source $HOME/.choose/lib/core/completion
+    [[ -f $HOME/.choose ]] && source $HOME/.choose_config
+else
+    echo 'choose not installed yet!  Run "make install" or follow the README instructions'
+fi

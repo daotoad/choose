@@ -20,7 +20,7 @@ install:
 	@echo "* Installing libraries to $(HOME)/.choose/lib"
 	@mkdir -p $(HOME)/.choose/lib/core
 	@cp -r lib/core $(HOME)/.choose/lib
-	@echo "* Installing helpers to $(HOME)/.choose/helper"
-	@echo
+	@cp   load_choose $(HOME)/.choose/load_choose
+	@echo "* Run  source load_choose"
 	@echo "Congratulations, choose is now installed"
 	@echo

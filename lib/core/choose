@@ -1,7 +1,6 @@
 #!/bin/bash
 
 source $HOME/.smartcd_config
-source $HOME/.choose/lib/core/completion
 #CHOOSE_TOOLS="$HOME/opt"
 
 function choose() {
@@ -171,7 +170,7 @@ manpath=""
 
 for choice in \${chosen[*]}
   do
-    version=\$(cat $choice)
+    version=\$(cat \$choice)
     command=\${choice:8}
 
     path+="\$CHOOSER_ROOT/\$command/\$version/bin:"
@@ -231,21 +230,21 @@ function _choose_add () {
 
 # edit config file
 function _choose_config () {
-    echo "TODO";
+    cat <<EOF > "$HOME/.choose_config"
+#export CHOOSE_TOOLS=
+#export CHOOSE_SRC=
+#export CHOOSE_BASE=
+EOF
 }
 
 
 function _choose_install () {
-    echo "TODO";
+    echo TODO
 }
 
 # echo full path to tool/version
-# choose path tool NAME - 
-# choose path tool NAME VERSION
-# choose path source NAME VERSION
 function _choose_path () {
-    echo "TODO";
+    echo TODO
 }
 
-
-source 
+return 0;

@@ -22,7 +22,7 @@ function _choose_completion() {
 
     local words
     if [[ $COMP_CWORD == 1 ]]; then
-        words="help tool list"
+        words="help tool list config"
     elif [[ $COMP_CWORD == 2 ]]; then
         case $prev in
                          help) words="tool list";;
