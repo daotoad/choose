@@ -162,7 +162,7 @@ function _choose_install_chooser_backend () {
 ########################################################################
 
 # Enter any bash_enter commands below here: (leave this line!)
-CHOOSER_ROOT=$ROOT
+export CHOOSE_ROOT=$ROOT
 
 chosen=(.choose.*);
 path=""
@@ -170,11 +170,15 @@ manpath=""
 
 for choice in \${chosen[*]}
   do
-    version=\$(cat \$choice)
-    command=\${choice:8}
+    export VERSION=\$(cat \$choice)
+    export TOOL=\${choice:8}
 
-    path+="\$CHOOSER_ROOT/\$command/\$version/bin:"
-    manpath+="\$CHOOSER_ROOT/$command/\$version/man:"
+    if [[ -f \$CHOOSE_ROOT/tools/\$TOOL/.choose.select ]]; then
+        _smartcd_exec_file \$CHOOSE_ROOT/tools/\$TOOL/.choose.select;
+    fi;
+
+    path+="\$CHOOSE_ROOT/tools/\$TOOL/\$VERSION/bin:"
+    manpath+="\$CHOOSE_ROOT/tools/\$TOOL/\$VERSION/man:"
 
   done
 
@@ -182,6 +186,10 @@ autostash PATH=\$path\$PATH
 autostash MANPATH=\$manpath\$MANPATH
 
 # Enter any bash_leave commands below here: (leave this line!)
+
+    if [[ -f \$CHOOSE_ROOT/tools/\$TOOL/.choose.deselect ]]; then
+        _smartcd_exec_file \$CHOOSE_ROOT/tools/\$TOOL/.choose.deselect;
+    fi;
 
 EOF
 
