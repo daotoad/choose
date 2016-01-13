@@ -273,8 +273,8 @@ function _choose_build_tool () {
     case $version in
         '') echo "You must specify a version of $tool to build.";;
          *) if  _isa_version "$tool" "$version";
-            echo "Version $version of tool '$tool' is already installed.";
-            else _choose_build_tool_version $tool $version
+	    then echo "Version $version of tool '$tool' is already installed.";
+            else _choose_build_tool_version $tool $version;
             fi;;
     esac
 }
