@@ -4,18 +4,17 @@ source $HOME/.smartcd_config
 #CHOOSE_TOOLS="$HOME/opt"
 
 function choose() {
-
     local command="$1"
     case $command in
         -h|help|'') shift; _choose_usage   "$@";;
               tool) shift; _choose_tool    "$@";;
+             build) shift; _choose_build   "$@";;
               list) shift; _choose_list    "$@";;
             config) shift; _choose_config  "$@";;
            install) shift; _choose_install "$@";;
                add) shift; _choose_add     "$@";;
                  *) shift; _choose_usage   "$@";;
     esac;
-
 }
 
 function _choose_tools_base {
@@ -144,7 +143,7 @@ function _choose_install_smartcd_template () {
 }
 
 function _choose_install_chooser_backend () {
-    local ROOT=$(_choose_base)
+    local ROOT=$(_choose_tools_base)
     mkdir -p "$HOME/.smartcd/templates"
     cat <<EOF > "$HOME/.smartcd/templates/chooser-backend"
 ########################################################################
@@ -170,25 +169,28 @@ manpath=""
 
 for choice in \${chosen[*]}
   do
-    export VERSION=\$(cat \$choice)
     export TOOL=\${choice:8}
+    export VERSION=\$(cat \$choice)
 
-    if [[ -f \$CHOOSE_ROOT/tools/\$TOOL/.choose.select ]]; then
-        _smartcd_exec_file \$CHOOSE_ROOT/tools/\$TOOL/.choose.select;
+    local SELECT_FILE="\$(_choose_find_control_file "\$TOOL" "\$VERSION" choose.select )";
+    if [ -n "\$SELECT_FILE" ]; then
+         echo "Running select file for $TOOL $VERSION: '\$SELECT_FILE'"
+        _smartcd_exec_file "\$SELECT_FILE"
+    else
+        echo "Running defaults select action for $TOOL $VERSION"
+        local TV_ROOT="\$CHOOSE_ROOT/\$TOOL/\$VERSION"
+        smartcd helper run prepend PATH "\$TV_ROOT/bin"
+        smartcd helper run prepend MANPATH "\$TV_ROOT/man"
     fi;
-
-    path+="\$CHOOSE_ROOT/tools/\$TOOL/\$VERSION/bin:"
-    manpath+="\$CHOOSE_ROOT/tools/\$TOOL/\$VERSION/man:"
 
   done
 
-autostash PATH=\$path\$PATH
-autostash MANPATH=\$manpath\$MANPATH
-
 # Enter any bash_leave commands below here: (leave this line!)
 
-    if [[ -f \$CHOOSE_ROOT/tools/\$TOOL/.choose.deselect ]]; then
-        _smartcd_exec_file \$CHOOSE_ROOT/tools/\$TOOL/.choose.deselect;
+    local DESELECT_FILE="\$(_choose_find_control_file \$TOOL \$VERSION choose.deselect )";
+    if [ -n \$DESELECT_FILE ]; then
+         echo "Running deselect file for $TOOL $VERSION: '\$DESELECT_FILE'"
+        _smartcd_exec_file \$DESELECT_FILE
     fi;
 
 EOF
@@ -250,9 +252,75 @@ function _choose_install () {
     echo TODO
 }
 
-# echo full path to tool/version
-function _choose_path () {
-    echo TODO
+
+
+function _choose_build() {
+    local tool="$1"
+    local version="$2"
+
+    case $tool in
+        '') echo "You must choose a tool to build.";;
+         *) if  _isa_tool "$tool";
+            then _choose_build_tool $tool $version
+            else echo "Tool '$tool' is not managed by choose."
+            fi;;
+    esac
+}
+function _choose_build_tool () {
+    local tool="$1"
+    local version="$2"
+
+    case $version in
+        '') echo "You must specify a version of $tool to build.";;
+         *) if  _isa_version "$tool" "$version";
+            echo "Version $version of tool '$tool' is already installed.";
+            else _choose_build_tool_version $tool $version
+            fi;;
+    esac
+}
+
+
+function _choose_build_tool_version {
+    local TOOL="$1";
+    local VERSION="$2";
+    local SOURCE_BASE="$(_choose_source_base)";
+    local TOOLS_BASE="$(_choose_tools_base)";
+
+    export TOOL
+    export VERSION
+    export SOURCE_BASE
+    export TOOLS_BASE
+
+    local BUILD_FILE="$(_choose_find_control_file $TOOL $VERSION choose.build )";
+
+    if [ -n "$BUILD_FILE" ]; then
+        $BUILD_FILE
+    else
+        echo "ERROR: no build file found for '$TOOL' '$VERSION'."
+    fi;
+
+}
+
+function _choose_find_control_file() {
+    local TOOL="$1";
+    local VERSION="$2";
+    local TARGET="$3";
+
+    local SOURCE_BASE="$(_choose_source_base)";
+    local TOOLS_BASE="$(_choose_tools_base)";
+
+    for test_file in \
+        "$TOOLS_BASE/$TOOL/$VERSION/$TARGET"  \
+        "$SOURCE_BASE/$TOOL/$VERSION/$TARGET" \
+        "$TOOLS_BASE/$TOOL/$TARGET"  \
+        "$SOURCE_BASE/$TOOL/$TARGET" \
+    ; do
+        if [ -f $test_file ]; then
+            echo $test_file;
+            return 0;
+        fi;
+    done 
+    return 1;
 }
 
 return 0;
