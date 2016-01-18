@@ -1,0 +1,24 @@
+#!/bin/bash
+source_url=http://www.cpan.org/src/5.0/$VERSION.tar.gz
+source_tarball=$VERSION.tar.gz 
+source_directory=$VERSION
+build_prefix=$TOOLS_BASE/$TOOL/$VERSION
+
+if [ !-f $source_tarball ]; then
+    if which wget;
+        then wget $source_url
+        else curl -O $source_url
+    fi;
+fi;
+
+if [ !-f $source_tarball ]; then
+    echo "Error downloading file $source_tarball"
+    exit 1;
+fi;
+
+tar -xzf $source_tarball
+cd $source_directory
+./Configure -des -Dprefix=$build_prefix
+make
+make test
+make install

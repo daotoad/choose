@@ -1,0 +1,32 @@
+#!/bin/bash
+source_url=http://www.cpan.org/src/5.0/$VERSION.tar.gz
+source_tarball=$VERSION.tar.gz 
+source_directory=$VERSION
+build_prefix=$TOOL_BASE/$TOOL/$VERSION
+
+if [[ ! -d rakudo ]];
+then git clone git://github.com/rakudo/rakudo.git
+fi
+
+cd rakudo
+git checkout $version
+perl Configure.pl --gen-moar --gen-nqp --backends=moar --prefix "$build_prefix"
+
+make
+make test
+make install
+
+export PATH=$(pwd)/install/bin/:$PATH
+
+if [[ ! -d panda ]]; then 
+    git clone --recursive git://github.com/tadzik/panda.git
+fi
+
+
+cd panda
+choose tool perl6 $VERSION
+
+perl6 bootstrap.pl
+
+panda install Task::Star
+

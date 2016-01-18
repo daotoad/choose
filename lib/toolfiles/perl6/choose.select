@@ -1,0 +1,7 @@
+smartcd helper run prepend PATH \
+   "$CHOOSE_ROOT/$TOOL/$VERSION/bin"                    \
+   "$CHOOSE_ROOT/$TOOL/$VERSION/share/perl6/bin"        \
+   "$CHOOSE_ROOT/$TOOL/$VERSION/share/perl6/site/bin"   \
+   "$CHOOSE_ROOT/$TOOL/$VERSION/share/perl6/vendor/bin" \
+;
+
