@@ -120,6 +120,7 @@ function _choose_tool () {
 
     _choose_write_chooser_file $tool $version
     _choose_install_smartcd_template $tool $version
+    smartcd reenter
 }
 
 function _choose_write_chooser_file () {
