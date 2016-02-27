@@ -1,0 +1,7 @@
+smartcd helper run prepend PATH \
+   "$CHOOSE_ROOT/$TOOL/$VERSION/bin"                    \
+;
+smartcd helper run prepend MANPATH \
+   "$CHOOSE_ROOT/$TOOL/$VERSION/bin"                    \
+;
+

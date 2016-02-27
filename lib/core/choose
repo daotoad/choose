@@ -17,6 +17,14 @@ function choose() {
     esac;
 }
 
+function _choose_install_base {
+    if [[ -n $CHOOSE_INSTALL ]]; then
+        echo "$CHOOSE_INSTALL"
+    else
+        echo "$HOME/.choose"
+    fi
+}
+
 function _choose_tools_base {
     if [[ -n $CHOOSE_TOOLS ]]; then
         echo "$CHOOSE_TOOLS"
@@ -293,6 +301,7 @@ function _choose_build_tool_version {
     export TOOLS_BASE
 
     local BUILD_FILE="$(_choose_find_control_file $TOOL $VERSION choose.build )";
+    echo -e "Build file is $BUILDFILE"
 
     if [ -n "$BUILD_FILE" ]; then
         pushd $SOURCE_BASE/$TOOL
@@ -311,17 +320,20 @@ function _choose_find_control_file() {
 
     local SOURCE_BASE="$(_choose_source_base)";
     local TOOLS_BASE="$(_choose_tools_base)";
+    local INSTALL_BASE="$(_choose_install_base)";
 
-    for test_file in \
+    local control_file_paths=(
         "$TOOLS_BASE/$TOOL/$VERSION/$TARGET"  \
         "$SOURCE_BASE/$TOOL/$VERSION/$TARGET" \
         "$TOOLS_BASE/$TOOL/$TARGET"  \
         "$SOURCE_BASE/$TOOL/$TARGET" \
-    ; do
-        if [ -f $test_file ]; then
+        "$INSTALL_BASE/lib/toolfiles/$TOOL/$TARGET" \
+    );
+    for test_file in ${control_file_paths[@]}; do
+       if [ -f $test_file ]; then
             echo $test_file;
             return 0;
-        fi;
+       fi;
     done 
     return 1;
 }
