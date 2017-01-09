@@ -15,8 +15,15 @@ test_zsh:
 test_all: test_bash test_zsh
 
 
-install:
+remove_core:
 	@[ -d $(HOME)/.choose/lib/core ] && echo "* Removing old $(HOME)/.choose/lib/core" && rm -rf $(HOME)/.choose/lib/core || true
+
+remove_toolfiles:
+	@[ -d $(HOME)/.choose/lib/toolfiles ] && echo "* Removing old $(HOME)/.choose/lib/toolfiles" && rm -rf $(HOME)/.choose/lib/toolfiles || true
+
+uninstall: remove_core remove_toolfiles
+
+install: uninstall
 	@echo "* Installing libraries to $(HOME)/.choose/lib"
 	@mkdir -p $(HOME)/.choose/lib/core
 	@cp -pr lib/core $(HOME)/.choose/lib
