@@ -1,7 +1,7 @@
 #!/bin/bash
-source_url=http://www.cpan.org/src/5.0/$VERSION.tar.gz
-source_tarball=$VERSION.tar.gz 
-source_directory=$VERSION
+source_url=http://www.cpan.org/src/5.0/perl-$VERSION.tar.gz
+source_tarball=perl-$VERSION.tar.gz 
+source_directory=perl-$VERSION
 build_prefix=$TOOLS_BASE/$TOOL/$VERSION
 
 if [ ! -f $source_tarball ]; then
