@@ -8,6 +8,7 @@ function choose() {
     case $command in
         -h|help|'') shift; _choose_usage   "$@";;
               tool) shift; _choose_tool    "$@";;
+            manage) shift; _choose_manage  "$@";;
              build) shift; _choose_build   "$@";;
               list) shift; _choose_list    "$@";;
             config) shift; _choose_config  "$@";;
@@ -50,8 +51,20 @@ function _choose_base() {
 }
 
 function _choose_usage () {
-    local usage="Usage: choose ( help | tool | list ) [args]"
+    local usage="Usage: choose ( help | tool | list | build | manage ) [args]"
     echo $usage;
+}
+
+function _choose_manage () {
+    local tool="$1"
+    if  _isa_tool "$tool";
+    then echo "Tool '$tool' is already managed by choose."
+    else
+	local TOOL_BIN_PATH="$(_choose_tools_base)/$tool";
+	local TOOL_SOURCE_PATH="$(_choose_source_base)/$tool";
+	mkdir -p $TOOL_BIN_PATH
+	mkdir -p $TOOL_SOURCE_PATH
+    fi;
 }
 
 function _choose_list () {
