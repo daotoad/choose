@@ -20,4 +20,5 @@ tar -xzf $source_tarball
 cd $source_directory
 make
 make test
+make doc
 make install
