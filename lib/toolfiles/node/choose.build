@@ -1,0 +1,23 @@
+#!/bin/bash
+source_url=https://nodejs.org/dist/v$VERSION/node-v$VERSION.tar.gz
+source_tarball=node-v$VERSION.tar.gz
+source_directory=node-v$VERSION
+build_prefix=$TOOLS_BASE/$TOOL/$VERSION
+
+if [ ! -f $source_tarball ]; then
+    if which wget;
+        then wget $source_url
+        else curl -O $source_url
+    fi;
+fi;
+
+if [ ! -f $source_tarball ]; then
+    echo "Error downloading file $source_tarball"
+    exit 1;
+fi;
+
+tar -xzf $source_tarball
+cd $source_directory
+make
+make test
+make install
