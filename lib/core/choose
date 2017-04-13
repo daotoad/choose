@@ -197,7 +197,7 @@ for choice in \${chosen[*]}
     local SELECT_FILE="\$(_choose_find_control_file "\$TOOL" "\$VERSION" choose.select )";
     if [ -n "\$SELECT_FILE" ]; then
          echo "Running select file for $TOOL $VERSION: '\$SELECT_FILE'"
-        _smartcd_exec_file "\$SELECT_FILE"
+        _smartcd_exec_file "\$SELECT_FILE" "__PATH__"
     else
         echo "Running defaults select action for $TOOL $VERSION"
         local TV_ROOT="\$CHOOSE_ROOT/\$TOOL/\$VERSION"
@@ -212,7 +212,7 @@ for choice in \${chosen[*]}
     local DESELECT_FILE="\$(_choose_find_control_file \$TOOL \$VERSION choose.deselect )";
     if [ -n \$DESELECT_FILE ]; then
          echo "Running deselect file for $TOOL $VERSION: '\$DESELECT_FILE'"
-        _smartcd_exec_file \$DESELECT_FILE
+        _smartcd_exec_file "\$DESELECT_FILE" "__PATH__"
     fi;
 
 EOF
