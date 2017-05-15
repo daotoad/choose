@@ -1,5 +1,5 @@
 #!/bin/bash
-build_prefix=$TOOL_BASE/$TOOL/$VERSION
+build_prefix=$TOOLS_BASE/$TOOL/$VERSION
 
 if [[ ! -d rakudo ]];
 then git clone git://github.com/rakudo/rakudo.git
