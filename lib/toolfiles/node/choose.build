@@ -24,6 +24,9 @@ if [ ! -e $source_directory ]; then
 fi;
 
 cd $source_directory
+if [ -e 'configure' ]; then
+    ./configure
+fi
 make
 make test
 make doc
