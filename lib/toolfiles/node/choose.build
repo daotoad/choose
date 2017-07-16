@@ -5,29 +5,34 @@ unpacked_tarball=node-v$VERSION
 source_directory=$VERSION
 install_prefix=$TOOLS_BASE/$TOOL/$VERSION
 
+if [[ ! $VERSION =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]]; then 
+    printf "\nBUILD FAILURE:\n\tInvalid version number.  Use only digits and dots. eg '0.10.1'\n\n";
+else
 
-if [ ! -e $source_directory ]; then
-    if [ ! -f $source_tarball ]; then
-        if which wget;
-            then wget $source_url
-            else curl -O $source_url
+    if [ ! -e $source_directory ]; then
+        if [ ! -f $source_tarball ]; then
+            if which wget;
+                then wget $source_url
+                else curl -O $source_url
+            fi;
         fi;
+
+        if [ ! -f $source_tarball ]; then
+            echo "Error downloading file $source_tarball"
+            exit 1;
+        fi;
+
+        tar -xzf $source_tarball
+        mv $unpacked_tarball $source_directory
     fi;
 
-    if [ ! -f $source_tarball ]; then
-        echo "Error downloading file $source_tarball"
-        exit 1;
-    fi;
+    cd $source_directory
+    if [ -e 'configure' ]; then
+        ./configure
+    fi
+    make
+    make test
+    make doc
+    make install PREFIX=$install_prefix PORTABLE=1
 
-    tar -xzf $source_tarball
-    mv $unpacked_tarball $source_directory
-fi;
-
-cd $source_directory
-if [ -e 'configure' ]; then
-    ./configure
 fi
-make
-make test
-make doc
-make install PREFIX=$install_prefix PORTABLE=1
