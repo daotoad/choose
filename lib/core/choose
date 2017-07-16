@@ -303,18 +303,13 @@ function _choose_build_tool () {
 
 
 function _choose_build_tool_version {
-    local TOOL="$1";
-    local VERSION="$2";
-    local SOURCE_BASE="$(_choose_source_base)";
-    local TOOLS_BASE="$(_choose_tools_base)";
-
-    export TOOL
-    export VERSION
-    export SOURCE_BASE
-    export TOOLS_BASE
+    export local TOOL="$1";
+    export local VERSION="$2";
+    export local SOURCE_BASE="$(_choose_source_base)";
+    export local TOOLS_BASE="$(_choose_tools_base)";
 
     local BUILD_FILE="$(_choose_find_control_file $TOOL $VERSION choose.build )";
-    echo -e "Build file is $BUILDFILE"
+    echo "Running build file for $TOOL $VERSION: $BUILD_FILE"
 
     if [ -n "$BUILD_FILE" ]; then
         pushd $SOURCE_BASE/$TOOL
