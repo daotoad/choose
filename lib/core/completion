@@ -22,12 +22,13 @@ function _choose_completion() {
 
     local words
     if [[ $COMP_CWORD == 1 ]]; then
-        words="help tool list config"
+        words="help tool list manage build config"
     elif [[ $COMP_CWORD == 2 ]]; then
         case $prev in
-                         help) words="tool list";;
-                         list) words="tools versions";;
-                         tool) words="$(choose list tools)";;
+                         help)  words="tool list build manage toolfiles";;
+                         list)  words="tools versions";;
+                         tool)  words="$(choose list tools)";;
+                         build) words="$(choose list tools)";;
         esac
     elif [[ $COMP_CWORD == 3 ]]; then
         case $prev in

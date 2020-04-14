@@ -11,7 +11,7 @@ function choose() {
              build) shift; _choose_build   "$@";;
               list) shift; _choose_list    "$@";;
             config) shift; _choose_config  "$@";;
-           install) shift; _choose_install "$@";;
+            manage) shift; _choose_manage  "$@";;
                add) shift; _choose_add     "$@";;
                  *) shift; _choose_usage   "$@";;
     esac;
@@ -257,8 +257,9 @@ EOF
 }
 
 
-function _choose_install () {
-    echo TODO
+function _choose_manage () {
+    mkdir -p $(_choose_source_base)/$1
+    mkdir -p $(_choose_tools_base)/$1
 }
 
 
