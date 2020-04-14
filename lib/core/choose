@@ -8,6 +8,7 @@ function choose() {
     case $command in
         -h|help|'') shift; _choose_usage   "$@";;
               tool) shift; _choose_tool    "$@";;
+            manage) shift; _choose_manage  "$@";;
              build) shift; _choose_build   "$@";;
               list) shift; _choose_list    "$@";;
             config) shift; _choose_config  "$@";;
@@ -50,8 +51,20 @@ function _choose_base() {
 }
 
 function _choose_usage () {
-    local usage="Usage: choose ( help | tool | list ) [args]"
+    local usage="Usage: choose ( help | tool | list | build | manage ) [args]"
     echo $usage;
+}
+
+function _choose_manage () {
+    local tool="$1"
+    if  _isa_tool "$tool";
+    then echo "Tool '$tool' is already managed by choose."
+    else
+	local TOOL_BIN_PATH="$(_choose_tools_base)/$tool";
+	local TOOL_SOURCE_PATH="$(_choose_source_base)/$tool";
+	mkdir -p $TOOL_BIN_PATH
+	mkdir -p $TOOL_SOURCE_PATH
+    fi;
 }
 
 function _choose_list () {
@@ -184,7 +197,7 @@ for choice in \${chosen[*]}
     local SELECT_FILE="\$(_choose_find_control_file "\$TOOL" "\$VERSION" choose.select )";
     if [ -n "\$SELECT_FILE" ]; then
          echo "Running select file for $TOOL $VERSION: '\$SELECT_FILE'"
-        _smartcd_exec_file "\$SELECT_FILE"
+        _smartcd_exec_file "\$SELECT_FILE" "__PATH__"
     else
         echo "Running defaults select action for $TOOL $VERSION"
         local TV_ROOT="\$CHOOSE_ROOT/\$TOOL/\$VERSION"
@@ -199,7 +212,7 @@ for choice in \${chosen[*]}
     local DESELECT_FILE="\$(_choose_find_control_file \$TOOL \$VERSION choose.deselect )";
     if [ -n \$DESELECT_FILE ]; then
          echo "Running deselect file for $TOOL $VERSION: '\$DESELECT_FILE'"
-        _smartcd_exec_file \$DESELECT_FILE
+        _smartcd_exec_file "\$DESELECT_FILE" "__PATH__"
     fi;
 
 EOF
@@ -291,22 +304,17 @@ function _choose_build_tool () {
 
 
 function _choose_build_tool_version {
-    local TOOL="$1";
-    local VERSION="$2";
-    local SOURCE_BASE="$(_choose_source_base)";
-    local TOOLS_BASE="$(_choose_tools_base)";
-
-    export TOOL
-    export VERSION
-    export SOURCE_BASE
-    export TOOLS_BASE
+    export local TOOL="$1";
+    export local VERSION="$2";
+    export local SOURCE_BASE="$(_choose_source_base)";
+    export local TOOLS_BASE="$(_choose_tools_base)";
 
     local BUILD_FILE="$(_choose_find_control_file $TOOL $VERSION choose.build )";
-    echo -e "Build file is $BUILDFILE"
+    echo "Running build file for $TOOL $VERSION: $BUILD_FILE"
 
     if [ -n "$BUILD_FILE" ]; then
         pushd $SOURCE_BASE/$TOOL
-        $BUILD_FILE
+        _smartcd_exec_file $BUILD_FILE
         popd
     else
         echo "ERROR: no build file found for '$TOOL' '$VERSION'."

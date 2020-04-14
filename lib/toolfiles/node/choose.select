@@ -1,0 +1,6 @@
+smartcd helper run prepend PATH \
+   "__PATH__/node_modules/.bin:$CHOOSE_ROOT/$TOOL/$VERSION/bin" \ 
+;
+smartcd helper run prepend MANPATH \
+   "$CHOOSE_ROOT/$TOOL/$VERSION/share/man" \
+;
